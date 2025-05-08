@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 from app.schemas.user_schema import UserCreate, Token
 from app.schemas.user_schema import LoginRequest
 from app.services.crypto_service import encrypt_data
-from app.services.crypto_service import decrypt_data
 from app.services.auth_service import hash_password, verify_password, create_access_token
 from app.database import db
 from datetime import datetime, timedelta
