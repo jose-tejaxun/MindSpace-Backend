@@ -19,3 +19,30 @@ async def get_profile(user: dict = Depends(get_current_user)):
         "big_five": user["big_five"]
     }
     return profile
+
+@router.get("/dashboard")
+async def user_dashboard(user: dict = Depends(get_current_user)):
+    """
+    Devuelve únicamente los endpoints que el front-end usará
+    para mostrar botones de navegación al usuario.
+    """
+    return {
+        "actions": [
+            {
+                "label": "Test de diagnóstico",
+                "method": "GET",
+                "path": "/user/tests/diagnostic"
+            },
+            {
+                "label": "Test de personalidad",
+                "method": "GET",
+                "path": "/user/tests/personality"
+            },
+            {
+                "label": "Asesor AI",
+                "method": "GET",
+                "path": "/user/chat"
+            }
+        ]
+    }
+
