@@ -10,11 +10,14 @@ router = APIRouter(prefix="/tests", tags=["Tests"])
 @router.get("/{test_type}")
 async def get_test_questions(test_type: str):
     """
-    Obtiene las preguntas del test según su tipo: 'diagnostic' o 'personality'
+    Obtiene las preguntas del test según su tipo: 'diagnostic', 'mbti', etc.
     """
     test = await db.tests.find_one({"type": test_type})
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
+
+    # Convertir ObjectId a string para que el modelo lo acepte
+    test["_id"] = str(test["_id"])
 
     test_data = TestModel(**test)
     return test_data
@@ -76,7 +79,6 @@ async def submit_test(test_submit: TestSubmit, user: dict = Depends(get_current_
         raise HTTPException(status_code=400, detail="Unknown test type")
 
     return {"message": f"{test_type} test submitted successfully"}
-
 
 @router.get("/results")
 async def get_test_results(user: dict = Depends(get_current_user)):
