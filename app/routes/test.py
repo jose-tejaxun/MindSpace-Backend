@@ -26,14 +26,13 @@ async def submit_test(test_submit: TestSubmit, user: dict = Depends(get_current_
 
     if test_type == "diagnostic":
         # Procesar respuestas: cuenta cuántas respuestas indican cada trastorno
-        disorder_counts = {"anxiety": 0, "depression": 0, "adhd": 0}
+        disorder_counts = {"anxiety": 0, "depression": 0, "adhd": 0, "stress": 0, "burnout": 0}
 
         for ans in test_submit.answers:
-            # Aquí se asume que la respuesta directa es el nombre del trastorno
             if ans.answer in disorder_counts:
                 disorder_counts[ans.answer] += 1
 
-        # Determinar los trastornos detectados (al menos 1 respuesta relacionada)
+        # Detectar los trastornos con al menos 1 respuesta positiva
         detected = [k for k, v in disorder_counts.items() if v > 0]
 
         await db.users.update_one(
@@ -44,30 +43,32 @@ async def submit_test(test_submit: TestSubmit, user: dict = Depends(get_current_
             }
         )
 
-    elif test_type == "personality":
-        # Procesar respuestas para Big Five (simplificado)
-        big_five_result = {
-            "openness": 0,
-            "conscientiousness": 0,
-            "extraversion": 0,
-            "agreeableness": 0,
-            "neuroticism": 0
+    elif test_type == "mbti":
+        # Inicializar conteos
+        mbti_counts = {
+            "E": 0, "I": 0,
+            "S": 0, "N": 0,
+            "T": 0, "F": 0,
+            "J": 0, "P": 0
         }
 
         for ans in test_submit.answers:
-            # Se asume que question_id es el rasgo y answer es un número
-            if ans.question_id in big_five_result:
-                big_five_result[ans.question_id] += int(ans.answer)
+            if ans.answer in mbti_counts:
+                mbti_counts[ans.answer] += 1
 
-        # Normalizar a máximo 100 (opcional, depende de tu escala)
-        for trait in big_five_result:
-            big_five_result[trait] = min(100, big_five_result[trait])
+        # Calcular por ejes
+        ei = "E" if mbti_counts["E"] >= mbti_counts["I"] else "I"
+        sn = "S" if mbti_counts["S"] >= mbti_counts["N"] else "N"
+        tf = "T" if mbti_counts["T"] >= mbti_counts["F"] else "F"
+        jp = "J" if mbti_counts["J"] >= mbti_counts["P"] else "P"
+
+        mbti_type = ei + sn + tf + jp
 
         await db.users.update_one(
             {"_id": ObjectId(user_id)},
             {
-                "$set": {"big_five": big_five_result},
-                "$addToSet": {"completed_tests": "personality"}
+                "$set": {"mbti_type": mbti_type},
+                "$addToSet": {"completed_tests": "mbti"}
             }
         )
 
@@ -75,3 +76,14 @@ async def submit_test(test_submit: TestSubmit, user: dict = Depends(get_current_
         raise HTTPException(status_code=400, detail="Unknown test type")
 
     return {"message": f"{test_type} test submitted successfully"}
+
+
+@router.get("/results")
+async def get_test_results(user: dict = Depends(get_current_user)):
+    results = {
+        "disorders": user.get("disorders", []),
+        "big_five": user.get("big_five", {}),
+        "mbti_type": user.get("mbti_type", None),
+        "completed_tests": user.get("completed_tests", [])
+    }
+    return results

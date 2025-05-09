@@ -15,10 +15,13 @@ async def get_profile(user: dict = Depends(get_current_user)):
         "sex": user["sex"],
         "email": user["email"],
         "role": user["role"],
-        "disorders": user["disorders"],
-        "big_five": user["big_five"]
+        "disorders": user.get("disorders", []),
+        "big_five": user.get("big_five", {}),
+        "mbti_type": user.get("mbti_type", None),  # ← Añadido aquí
+        "completed_tests": user.get("completed_tests", [])
     }
     return profile
+
 
 @router.get("/dashboard")
 async def user_dashboard(user: dict = Depends(get_current_user)):

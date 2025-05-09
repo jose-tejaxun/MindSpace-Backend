@@ -1,7 +1,17 @@
 import pymongo
+import os
+from dotenv import load_dotenv
 
-# Conexión MongoDB local
-client = pymongo.MongoClient("mongodb://localhost:27017/")
+# Cargar variables del entorno
+load_dotenv()
+
+# Leer URL desde .env
+MONGO_URL = os.getenv("MONGO_URL")
+if not MONGO_URL:
+    raise Exception("Falta la variable MONGO_URL en el archivo .env")
+
+# Conexión pymongo (sincrónica)
+client = pymongo.MongoClient(MONGO_URL)
 db = client["mindspace"]
 tests_collection = db["tests"]
 
@@ -43,7 +53,6 @@ diagnostic_test = {
 
 # ---------- TEST MBTI (AMPLIADO) ----------
 mbti_questions = []
-# Repartir 50 preguntas entre los 4 ejes
 for i in range(1, 13):
     mbti_questions.append({
         "id": "ei",
