@@ -17,9 +17,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(chatbot.router, prefix="/chatbot", tags=["Chatbot"])
+
 app.include_router(auth.router, prefix="/auth")
 app.include_router(user.router, prefix="/user")
 app.include_router(admin.router, prefix="/admin")
 app.include_router(test.router)
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(chatbot.router, prefix="/chatbot", tags=["Chatbot"])
