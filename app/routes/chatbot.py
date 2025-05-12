@@ -3,6 +3,8 @@ from app.services.speech_service import audio_to_text, text_to_audio
 from app.services.dependencies import get_current_user
 from app.database import db
 from datetime import datetime
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 
 router = APIRouter()
 
@@ -12,16 +14,13 @@ async def voice_chat(
     user: dict = Depends(get_current_user)
 ):
     try:
-        # Convertir audio a texto
         user_input = audio_to_text(audio.file)
 
-        # Lógica de respuesta simple (puedes conectar GPT luego)
         if "triste" in user_input.lower():
             bot_response = "Lamento que te sientas así. ¿Quieres hablar de ello?"
         else:
             bot_response = "Gracias por compartirlo. Estoy aquí para ayudarte."
 
-        # Mensajes
         user_msg = {
             "sender": "user",
             "message": user_input,
@@ -33,7 +32,6 @@ async def voice_chat(
             "timestamp": datetime.utcnow()
         }
 
-        # Guardar conversación en la colección `chat`
         existing_session = db.chat.find_one({"user_id": str(user["_id"])})
 
         if existing_session:
@@ -47,12 +45,13 @@ async def voice_chat(
                 "messages": [user_msg, bot_msg]
             })
 
-        # Convertir respuesta a audio
         audio_output = text_to_audio(bot_response)
 
-        return {
-            "text": bot_response
-        }
+        return StreamingResponse(
+            content=audio_output,
+            media_type="audio/wav",
+            headers={"X-Text-Response": bot_response}
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

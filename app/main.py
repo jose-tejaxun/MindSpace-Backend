@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import auth, user, admin, test, chatbot
-from app.routes import chatbot
-app.include_router(chatbot.router, prefix="/chatbot", tags=["Chatbot"])
 
 app = FastAPI()
 
@@ -10,8 +8,6 @@ origins = [
     "http://localhost:3000",  # para pruebas locales
     "https://mind-space-frontend.vercel.app"  # tu frontend en Vercel
 ]
-
-app.include_router(chatbot.router, prefix="/chatbot", tags=["Chatbot"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,5 +21,5 @@ app.include_router(auth.router, prefix="/auth")
 app.include_router(user.router, prefix="/user")
 app.include_router(admin.router, prefix="/admin")
 app.include_router(test.router)
-
-app.include_router(voice_chat.router, prefix="/chatbot")
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(chatbot.router, prefix="/chatbot", tags=["Chatbot"])
