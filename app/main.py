@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import auth, user, admin, test, chatbot
-from app.chatbot import voice_chat
+from app.routes import chatbot
+app.include_router(chatbot.router, prefix="/chatbot", tags=["Chatbot"])
 
 app = FastAPI()
 
