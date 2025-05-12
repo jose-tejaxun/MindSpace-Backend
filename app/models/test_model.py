@@ -1,15 +1,20 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Union
+
+class Option(BaseModel):
+    label: str
+    value: str
 
 class Question(BaseModel):
     id: str
     text: str
-    options: List[str]
-    correct_answer: Optional[str] = None  # for mental disorder test
+    # Puede ser lista de strings (diagnóstico) o lista de Option (MBTI)
+    options: Union[List[str], List[Option]]
+    correct_answer: Optional[str] = None
 
 class TestModel(BaseModel):
     id: Optional[str] = Field(alias="_id")
-    type: str  # "disorder" or "personality"
+    type: str  # "diagnostic" or "mbti"
     title: str
     description: str
     questions: List[Question]
