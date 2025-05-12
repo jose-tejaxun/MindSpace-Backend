@@ -13,3 +13,6 @@ class MessageResponse(BaseModel):
 class ChatHistoryResponse(BaseModel):
     session_id: str
     messages: List[MessageResponse]
+class VoiceChatResponse(BaseModel):
+    question: str
+    answer: str
